@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { VideoInfo } from '$lib/types';
+	import StationSelector from '../components/StationSelector.svelte';
 	import YoutubeEmbed from '../components/YoutubeEmbed.svelte';
 	import videoInfoString from '../data/videoUrls.json';
 
@@ -9,6 +10,7 @@
 	let videoLoaded = false;
 	let videoPlaying = true;
 	let gifIndex = 1;
+	let showStationSelector = false;
 
 	const toggleVideo = () => {
 		if (videoLoaded) {
@@ -34,7 +36,7 @@
 		gifIndex = newGifIndex;
 	};
 
-	const changeVideo = () => {
+	const shuffleVideo = () => {
 		let newVideoToPlay: VideoInfo | undefined = selectedVideo;
 
 		while (newVideoToPlay == selectedVideo) {
@@ -80,7 +82,7 @@
 				<i class="fa-solid {videoLoaded && videoPlaying ? 'fa-pause' : 'fa-play'} fa-lg shadow-icon"
 				></i>
 			</button>
-			<button class="cursor-pointer" on:click={() => changeVideo()}>
+			<button class="cursor-pointer" on:click={() => shuffleVideo()}>
 				<i class="fa-solid fa-shuffle fa-lg shadow-icon"></i>
 			</button>
 			<button class="cursor-pointer">
@@ -94,9 +96,16 @@
 			</button>
 		</div>
 
-		<div class="z-20 text-[#00CED1] flex gap-5">
+		<button
+			class="z-20 text-[#00CED1] flex gap-5 cursor-pointer"
+			on:click={() => (showStationSelector = true)}
+		>
 			<h1 class="shadow-text">Now Playing:</h1>
 			<span class="shadow-text">{selectedVideo.title}</span>
-		</div>
+		</button>
 	</div>
+
+	{#if showStationSelector}
+		<StationSelector></StationSelector>
+	{/if}
 </div>
