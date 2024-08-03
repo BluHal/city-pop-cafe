@@ -2,20 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: 'px_sans_nouveaux';
+	src: url('../fonts/px_sans_nouveaux.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
 body {
-	font-family: 'Mochiy Pop One', sans-serif;
+	font-family: 'px_sans_nouveaux', sans-serif;
+	font-weight: 400;
+	font-style: normal;
+
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+}
+
+span {
+	font-family: 'px_sans_nouveaux', sans-serif;
 	font-weight: 400;
 	font-style: normal;
 }
 
 .shadow-icon {
-	filter: drop-shadow(0px 0px 2px #00ced1) drop-shadow(0px 0px 8px #00ced1);
+	filter: drop-shadow(0px 0px 2px #ff00ff) drop-shadow(0px 0px 8px #ff00ff);
 }
 .shadow-text {
 	text-shadow:
-		0px 0px 2px #00ced1,
-		0px 0px 15px #00ced1,
-		0px 0px 60px #00ced1;
+		0px 0px 2px #ff00ff,
+		0px 0px 15px #ff00ff,
+		0px 0px 60px #ff00ff;
 }
 
 .vignette {
@@ -25,14 +42,17 @@ body {
 	right: 0;
 	bottom: 0;
 	background: url('/images/vignette.png');
-	z-index: 11;
 	background-size: 100% 100%;
 	mix-blend-mode: overlay;
 	pointer-events: none;
-	opacity: 0.6;
+	opacity: 1;
 }
 
 .stationSelectorGrid {
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	grid-template-rows: min-content;
+}
+
+.centerControllerWrapper:hover > button {
+	transform: scale(1) !important;
 }

@@ -1,8 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
 
+	// @ts-ignore
 	export let player;
 	export let initialVideoId = '';
+
+	const dispatch = createEventDispatcher();
 
 	const ytPlayerId = 'youtube-player';
 
@@ -13,7 +17,10 @@
 				height: '100%',
 				width: '100%',
 				videoId: initialVideoId,
-				playerVars: { autoplay: 1, controls: 0, showinfo: 0, rel: 0, modestbranding: 1 }
+				playerVars: { autoplay: 1, controls: 0, showinfo: 0, rel: 0, modestbranding: 1 },
+				events: {
+					onStateChange: onPlayerStateChange
+				}
 			});
 		}
 
@@ -25,6 +32,20 @@
 			window.onYouTubeIframeAPIReady = load;
 		}
 	});
+
+	// @ts-ignore
+	function onPlayerStateChange(event) {
+		// @ts-ignore
+		if (event.data == YT.PlayerState.PLAYING) {
+			onVideoLoaded();
+		}
+	}
+
+	function onVideoLoaded() {
+		// @ts-ignore
+		var videoData = player.getVideoData();
+		dispatch('videoLoaded', videoData.title);
+	}
 </script>
 
 <svelte:head>
