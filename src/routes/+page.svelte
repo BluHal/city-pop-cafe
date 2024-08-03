@@ -137,7 +137,7 @@
 </script>
 
 <div class="w-dvw h-dvh flex flex-col p-10 items-stretch justify-between">
-	<div class="w-dvw h-dvh absolute inset-0 {showOriginalVideo ? 'z-20' : 'z-0'}">
+	<div class="w-dvw h-dvh inset-0 {showOriginalVideo ? 'absolute z-20' : 'hidden'}">
 		<YoutubeEmbed bind:player on:videoLoaded={onVideoLoaded} />
 	</div>
 
