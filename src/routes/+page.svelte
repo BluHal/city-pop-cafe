@@ -4,17 +4,20 @@
 	import StationSelector from '../components/StationSelector.svelte';
 	import YoutubeEmbed from '../components/YoutubeEmbed.svelte';
 	import videoInfoString from '../data/videoUrls.json';
+	import Pomodoro from '../components/Pomodoro.svelte';
+
+	const videoInfos: VideoInfo[] = videoInfoString;
+	const availableGifIndexes = [1, 2, 3, 4, 5, 6, 7, 8];
 
 	let staticSound: any;
-	const videoInfos: VideoInfo[] = videoInfoString;
-
+	let isPlayerReady = false;
 	let firstStart = true;
 	let player: any;
 	let videoTitle: string;
 	let selectedVideo: VideoInfo = getRandomElement(videoInfos) || videoInfos[0];
 	let videoLoaded = false;
 	let videoPlaying = true;
-	let gifIndex = 1;
+	let gifIndex = getRandomElement(availableGifIndexes);
 	let showStationSelector = false;
 	let volume = 100;
 	let showStaticEffect = false;
@@ -60,6 +63,10 @@
 		showIndicator = !showIndicator;
 	}
 
+	function onPlayerReady(event: any) {
+		isPlayerReady = event.detail;
+	}
+
 	function onVideoLoaded(event: any) {
 		videoLoaded = true;
 		videoTitle = event.detail;
@@ -67,6 +74,8 @@
 	}
 
 	const toggleVideo = () => {
+		if (!isPlayerReady) return;
+
 		if (videoLoaded) {
 			if (videoPlaying) player.pauseVideo();
 			else player.playVideo();
@@ -78,11 +87,10 @@
 	};
 
 	const changeGif = () => {
-		const availableGifIndex = [1, 2, 3, 4, 5, 6, 7];
 		let newGifIndex: number | undefined = gifIndex;
 
 		while (newGifIndex == gifIndex) {
-			newGifIndex = getRandomElement(availableGifIndex);
+			newGifIndex = getRandomElement(availableGifIndexes);
 		}
 
 		if (!newGifIndex) return;
@@ -138,7 +146,7 @@
 
 <div class="w-dvw h-dvh flex flex-col p-10 items-stretch justify-between">
 	<div class="w-dvw h-dvh inset-0 {showOriginalVideo ? 'absolute z-20' : 'hidden'}">
-		<YoutubeEmbed bind:player on:videoLoaded={onVideoLoaded} />
+		<YoutubeEmbed bind:player on:videoLoaded={onVideoLoaded} on:playedReady={onPlayerReady} />
 	</div>
 
 	{#if showStaticEffect}
@@ -168,12 +176,16 @@
 		style="background-image: url('/gifs/gif-{gifIndex}.gif');"
 	></div>
 
+	<div
+		class="w-dvw h-dvh absolute inset-0 z-10 bg-cover"
+		style="background-image: url('/gifs/gif-{gifIndex}.gif');"
+	></div>
+
 	<div class="vignette w-dvw h-dvh z-30"></div>
 
 	<div class="z-20 text-white flex justify-between gap-5">
 		{#if !firstStart}
-			<!-- TODO -->
-			<button><i class="fa-solid fa-stopwatch fa-lg shadow-icon hidden"></i></button>
+			<Pomodoro />
 
 			{#if videoLoaded}
 				<button on:click={() => (showOriginalVideo = !showOriginalVideo)}
@@ -251,7 +263,7 @@
 				</div>
 			</div>
 		</div>
-	{:else}
+	{:else if isPlayerReady}
 		<div class="w-full z-20 flex gap-1">
 			<span
 				class="text-white shadow-text text-ellipsis overflow-hidden md:overflow-visible lg:overflow-visible cursor-pointer"
@@ -262,7 +274,12 @@
 	{/if}
 
 	{#if showStationSelector}
-		<StationSelector on:stationClick={stationChanged}></StationSelector>
+		<StationSelector
+			on:stationClick={stationChanged}
+			on:stationEsc={() => {
+				showStationSelector = false;
+			}}
+		></StationSelector>
 	{/if}
 
 	<audio src="/sounds/static-noise.mp3" bind:this={staticSound}></audio>

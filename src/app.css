@@ -19,6 +19,11 @@ body {
 	margin: 0;
 }
 
+*:focus-visible {
+	outline: none; /* Remove the default outline */
+	box-shadow: none; /* Remove any box-shadow if used */
+}
+
 span {
 	font-family: 'px_sans_nouveaux', sans-serif;
 	font-weight: 400;

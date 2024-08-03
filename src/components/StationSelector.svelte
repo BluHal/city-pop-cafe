@@ -1,13 +1,23 @@
 <script lang="ts">
 	import type { VideoInfo } from '$lib/types';
 	import videoInfoString from '../data/videoUrls.json';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 	const videoInfos: VideoInfo[] = videoInfoString;
 
 	function handleStationClick(videoInfo: VideoInfo) {
 		dispatch('stationClick', { videoInfo });
+	}
+
+	onMount(() => {
+		window.addEventListener('keydown', handleKeyDown);
+	});
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key == 'Escape') {
+			dispatch('stationEsc');
+		}
 	}
 </script>
 
