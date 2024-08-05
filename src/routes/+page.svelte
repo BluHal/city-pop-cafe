@@ -183,7 +183,7 @@
 
 	<div class="vignette w-dvw h-dvh z-30"></div>
 
-	<div class="z-20 text-white flex justify-between gap-5">
+	<div class="z-20 text-white flex justify-end gap-5">
 		{#if !firstStart}
 			<Pomodoro />
 

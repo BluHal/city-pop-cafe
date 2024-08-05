@@ -1,11 +1,160 @@
-<script>
+<script lang="ts">
+	import { linear } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
+	import { onDestroy } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
+
+	let duration: number = 25 * 60;
+
+	const animationOptions = { duration: 100, easing: linear };
+
+	let alarmSound: any;
+	let showToolTip = false;
+	let showPomodoroFunctions = true;
+
+	let timerStarted = false;
+	let remainingTime: number = duration;
+	let intervalId: number | null = null;
+	let timeString: string = formatTime(remainingTime);
+	let isPaused = false;
+
+	const dispatch = createEventDispatcher();
+
+	function formatTime(seconds: number): string {
+		const minutes = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${padZero(minutes)}:${padZero(secs)}`;
+	}
+
+	function padZero(num: number): string {
+		return num < 10 ? `0${num}` : num.toString();
+	}
+
+	function startTimer(): void {
+		if (intervalId) return;
+
+		intervalId = window.setInterval(() => {
+			if (remainingTime > 0) {
+				remainingTime--;
+				timeString = formatTime(remainingTime);
+				timerStarted = true;
+				dispatch('tick', { remainingTime, timeString });
+			} else {
+				stopTimer();
+				dispatch('complete');
+				playSound();
+				setTimeout(() => {
+					stopSound();
+				}, 2000);
+			}
+		}, 1000);
+	}
+
+	function stopTimer(): void {
+		timerStarted = false;
+		remainingTime = duration;
+		isPaused = false;
+		if (intervalId !== null) {
+			clearInterval(intervalId);
+			intervalId = null;
+		}
+	}
+
+	function pauseTimer(): void {
+		if (!intervalId) return;
+
+		clearInterval(intervalId);
+		intervalId = null;
+		isPaused = true;
+	}
+
+	function resumeTimer(): void {
+		if (!isPaused) return;
+
+		startTimer();
+		isPaused = false;
+	}
+
+	function startBreak(): void {
+		remainingTime = .5 * 60;
+		startTimer();
+	}
+
+	onDestroy(() => {
+		stopTimer();
+	});
+
+	$: remainingTime = duration;
+	$: timeString = formatTime(remainingTime);
+
+	function toggleTooltip() {
+		showToolTip = !showToolTip;
+	}
+
+	function playSound() {
+		alarmSound.play();
+	}
+
+	function stopSound() {
+		alarmSound.pause();
+		alarmSound.currentTime = 0;
+	}
 </script>
 
-<button class="w-20 h-20 shadow-icon">
-	<img
-		class="post_media_photo image"
-		src="https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s540x810/bf8f8eaf893c46983127deb450ebe31dd9e46771.gifv"
-		srcset="https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s75x75_c1/af1ca6ea8031ea235e2f615776becc967e477bdb.gifv 75w, https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s100x200/5499c03957d816bf635c8e03c75b7945ffed1f03.gifv 100w, https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s250x400/98578243be468040ccf254d9cedd38e1be8dff17.gifv 250w, https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s400x600/2f025efa4439e4be493f8b4bb8db8511321437c2.gifv 400w, https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s500x750/19427026b6b1b5b96b9a44aa4589263487a01a9e.gifv 500w, https://64.media.tumblr.com/02f1e684630962dfde601535ca66c7ec/4f559fadb3dc32b2-db/s540x810/bf8f8eaf893c46983127deb450ebe31dd9e46771.gifv 540w"
-		alt="image"
-	/>
-</button>
+<div class="relative">
+	{#if timerStarted}
+		<img
+			class="z-30 absolute scale-[1.6] top-2 -left-[1px] shadow-icon"
+			src="/gifs/loading.gif"
+			alt="loading"
+		/>
+	{/if}
+
+	<button
+		class="cursor-pointer"
+		on:mouseenter={() => toggleTooltip()}
+		on:mouseleave={() => toggleTooltip()}
+	>
+		<i class="fa-solid fa-hourglass-end fa-lg shadow-icon {timerStarted ? 'opacity-0' : ''}"></i>
+	</button>
+	{#if showToolTip}
+		<div
+			class="absolute -left-10 top-9 p-2 rounded-lg shadow-tooltip z-50"
+			transition:fade={animationOptions}
+		>
+			<h1 class="shadow-text text-sm">Pomodoro</h1>
+		</div>
+	{/if}
+
+	{#if showPomodoroFunctions}
+		<div class="absolute -left-7 top-9 p-2 flex flex-col gap-2">
+			<span class="shadow-text text-sm">{timeString}</span>
+
+			{#if timerStarted}
+				{#if isPaused}
+					<div class="flex flex-col gap-2 items-baseline">
+						<button on:click={() => stopTimer()} class="shadow-text text-xs cursor-pointer"
+							>STOP</button
+						>
+						<button on:click={() => resumeTimer()} class="shadow-text text-xs cursor-pointer"
+							>CONTINUE</button
+						>
+					</div>
+				{:else}
+					<button on:click={() => pauseTimer()} class="shadow-text text-xs cursor-pointer"
+						>PAUSE</button
+					>
+				{/if}
+			{:else}
+				<button on:click={() => startTimer()} class="shadow-text text-xs cursor-pointer"
+					>START</button
+				>
+			{/if}
+
+			<button on:click={() => startBreak()} class="shadow-text text-xs cursor-pointer text-left"
+				>BREAK</button
+			>
+		</div>
+	{/if}
+	<audio src="/sounds/alarm.mp3" bind:this={alarmSound}></audio>
+</div>
