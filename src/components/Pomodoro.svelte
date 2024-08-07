@@ -128,7 +128,7 @@
 
 	{#if showPomodoroFunctions}
 		<div class="absolute -left-7 top-9 p-2 flex flex-col gap-2">
-			<span class="shadow-text text-sm">{timeString}</span>
+			<span class="shadow-text text-sm cursor-pointer">{timeString}</span>
 
 			{#if timerStarted}
 				{#if isPaused}
