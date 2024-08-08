@@ -30,15 +30,10 @@ span {
 	font-style: normal;
 }
 
-.shadow-tooltip {
-	background-color: rgba(0, 0, 0, 0.7);
-	box-shadow: 0 0 11px 5px black;
-	outline: 0;
-}
-
 .shadow-icon {
 	filter: drop-shadow(0px 0px 2px #ff00ff) drop-shadow(0px 0px 8px #ff00ff);
 }
+
 .shadow-text {
 	text-shadow:
 		0px 0px 2px #ff00ff,
@@ -66,4 +61,10 @@ span {
 
 .centerControllerWrapper:hover > button {
 	transform: scale(1) !important;
+}
+
+.shadow-tooltip {
+	background-color: rgba(0, 0, 0, 1);
+	box-shadow: 0 0 11px 5px black;
+	outline: 0;
 }

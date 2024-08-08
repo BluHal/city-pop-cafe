@@ -27,7 +27,7 @@
 					height: '100%',
 					width: '100%',
 					videoId: initialVideoId,
-					playerVars: { autoplay: 1, controls: 0, showinfo: 0, rel: 0, modestbranding: 1 },
+					playerVars: { autoplay: 1, controls: 1, showinfo: 0, rel: 0, modestbranding: 1 },
 					events: {
 						onStateChange: onPlayerStateChange,
 						onReady: onPlayerReady

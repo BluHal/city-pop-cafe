@@ -1,8 +1,7 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { linear } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
-	import { onDestroy } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
 
 	let duration: number = 25 * 60;
 
@@ -10,15 +9,13 @@
 
 	let alarmSound: any;
 	let showToolTip = false;
-	let showPomodoroFunctions = true;
+	let showPomodoroFunctions = false;
 
 	let timerStarted = false;
 	let remainingTime: number = duration;
 	let intervalId: number | null = null;
 	let timeString: string = formatTime(remainingTime);
 	let isPaused = false;
-
-	const dispatch = createEventDispatcher();
 
 	function formatTime(seconds: number): string {
 		const minutes = Math.floor(seconds / 60);
@@ -38,10 +35,8 @@
 				remainingTime--;
 				timeString = formatTime(remainingTime);
 				timerStarted = true;
-				dispatch('tick', { remainingTime, timeString });
 			} else {
 				stopTimer();
-				dispatch('complete');
 				playSound();
 				setTimeout(() => {
 					stopSound();
@@ -76,7 +71,7 @@
 	}
 
 	function startBreak(): void {
-		remainingTime = .5 * 60;
+		remainingTime = 5 * 60;
 		startTimer();
 	}
 
@@ -114,15 +109,16 @@
 		class="cursor-pointer"
 		on:mouseenter={() => toggleTooltip()}
 		on:mouseleave={() => toggleTooltip()}
+		on:click={() => (showPomodoroFunctions = !showPomodoroFunctions)}
 	>
 		<i class="fa-solid fa-hourglass-end fa-lg shadow-icon {timerStarted ? 'opacity-0' : ''}"></i>
 	</button>
 	{#if showToolTip}
 		<div
-			class="absolute -left-10 top-9 p-2 rounded-lg shadow-tooltip z-50"
+			class="absolute -left-9 top-8 p-1 rounded-lg shadow-tooltip z-50"
 			transition:fade={animationOptions}
 		>
-			<h1 class="shadow-text text-sm">Pomodoro</h1>
+			<span class="shadow-text text-sm">Pomodoro</span>
 		</div>
 	{/if}
 

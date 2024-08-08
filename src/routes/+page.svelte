@@ -5,6 +5,7 @@
 	import YoutubeEmbed from '../components/YoutubeEmbed.svelte';
 	import videoInfoString from '../data/videoUrls.json';
 	import Pomodoro from '../components/Pomodoro.svelte';
+	import Todo from '../components/Todo.svelte';
 
 	const videoInfos: VideoInfo[] = videoInfoString;
 	const availableGifIndexes = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -23,6 +24,7 @@
 	let showStaticEffect = false;
 	let showOriginalVideo = false;
 	let showIndicator = true;
+	let todoModalOpened = false;
 
 	onMount(() => {
 		let interval = setInterval(updateIndicator, 750);
@@ -37,6 +39,8 @@
 			toggleVideo();
 			return;
 		}
+
+		if (todoModalOpened) return;
 
 		switch (event.key) {
 			case 'g':
@@ -53,7 +57,7 @@
 	}
 
 	function handleMouseClick() {
-		if (!firstStart) return;
+		if (!firstStart || todoModalOpened) return;
 
 		firstStart = false;
 		toggleVideo();
@@ -87,15 +91,9 @@
 	};
 
 	const changeGif = () => {
-		let newGifIndex: number | undefined = gifIndex;
+		if (!gifIndex) return;
 
-		while (newGifIndex == gifIndex) {
-			newGifIndex = getRandomElement(availableGifIndexes);
-		}
-
-		if (!newGifIndex) return;
-
-		gifIndex = newGifIndex;
+		gifIndex = getNextElement(availableGifIndexes, gifIndex - 1);
 	};
 
 	const shuffleVideo = () => {
@@ -116,7 +114,7 @@
 			changeGif();
 		}
 		setTimeout(() => {
-			player.loadVideoById(selectedVideo.id);
+			player.loadVideoById(selectedVideo.id, selectedVideo.startAt || 0);
 		}, 100);
 	};
 
@@ -137,10 +135,22 @@
 		showStaticEffect = false;
 	}
 
+	function onTodoModalToggle(event: any) {
+		todoModalOpened = event.detail;
+	}
+
 	function getRandomElement<T>(array: T[]): T | undefined {
 		if (array.length === 0) return undefined;
 		const randomIndex = Math.floor(Math.random() * array.length);
 		return array[randomIndex];
+	}
+
+	function getNextElement<T>(array: T[], currentIndex: number): T | undefined {
+		if (array.length === 0) return undefined;
+		const nextIndex = currentIndex + 1;
+		if (nextIndex >= array.length) return array[0];
+
+		return array[nextIndex];
 	}
 </script>
 
@@ -157,7 +167,7 @@
 	{/if}
 
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	{#if !firstStart}
+	{#if !firstStart && !todoModalOpened}
 		<div
 			class="absolute inset-1/4 cursor-pointer z-30 flex items-middle justify-center centerControllerWrapper"
 			on:click={() => toggleVideo()}
@@ -185,6 +195,7 @@
 
 	<div class="z-20 text-white flex justify-end gap-5">
 		{#if !firstStart}
+			<Todo on:todoModalToggle={onTodoModalToggle} />
 			<Pomodoro />
 
 			{#if videoLoaded}
