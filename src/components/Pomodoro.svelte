@@ -3,10 +3,11 @@
 	import { linear } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
 
-	let duration: number = 25 * 60;
+	export let cssVarStyles;
 
 	const animationOptions = { duration: 100, easing: linear };
 
+	let duration: number = 25 * 60;
 	let alarmSound: any;
 	let showToolTip = false;
 	let showPomodoroFunctions = false;
@@ -96,7 +97,7 @@
 	}
 </script>
 
-<div class="relative">
+<div class="relative" style={cssVarStyles}>
 	{#if timerStarted}
 		<img
 			class="z-30 absolute scale-[1.6] top-2 -left-[1px] shadow-icon"
@@ -154,3 +155,16 @@
 	{/if}
 	<audio src="/sounds/alarm.mp3" bind:this={alarmSound}></audio>
 </div>
+
+<style>
+	.shadow-icon {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
+	}
+
+	.shadow-text {
+		text-shadow:
+			0px 0px 2px var(--main-color),
+			0px 0px 15px var(--main-color),
+			0px 0px 60px var(--main-color);
+	}
+</style>

@@ -4,6 +4,8 @@
 	import { linear } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
 
+	export let cssVarStyles;
+
 	const animationOptions = { duration: 100, easing: linear };
 	const dispatch = createEventDispatcher();
 
@@ -57,7 +59,7 @@
 	}
 </script>
 
-<div>
+<div style={cssVarStyles}>
 	<div class="relative">
 		<button
 			class="cursor-pointer"
@@ -80,7 +82,7 @@
 
 	{#if showTodoModal}
 		<div
-			class="w-dvw h-dvh fixed inset-0 bg-white bg-opacity-10 backdrop-blur-sm flex justify-center items-center z-[100]"
+			class="w-dvw h-dvh fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm flex justify-center items-center z-[100]"
 		>
 			<div
 				class="relative w-3/4 md:2/3 lg:w-2/5 bg-black bg-opacity-90 flex flex-col justify-center text-center rounded-2xl p-4 md:p-8"
@@ -94,7 +96,7 @@
 				<form>
 					<input
 						type="text"
-						class="text-white text-lg rounded w-full md:w-4/5 h-14 placeholder:italic bg-transparent border border-neon-pink px-2 todoInput"
+						class="text-white text-lg rounded w-full md:w-4/5 h-14 placeholder:italic bg-transparent border px-2 todoInput applyBorderColor"
 						placeholder="Write a new task"
 						on:keydown={onAddTodoEnter}
 						bind:this={todoInputRef}
@@ -104,7 +106,7 @@
 				<div class="flex flex-col max-h-96 overflow-y-auto items-center">
 					{#each todos as todo, index}
 						<div
-							class="w-full md:w-4/5 min-h-14 border border-neon-pink rounded py-1 px-3 flex items-center justify-between"
+							class="w-full md:w-4/5 min-h-14 border rounded py-1 px-3 flex items-center justify-between applyBorderColor"
 						>
 							<div class="flex gap-3 items-center w-5/6">
 								<div
@@ -138,11 +140,26 @@
 </div>
 
 <style>
-	.todoInput:focus {
-		filter: drop-shadow(0px 0px 2px #ff00ff) drop-shadow(0px 0px 8px #ff00ff);
+	.shadow-icon {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
 	}
 
-	.fa-solid:hover {
-		filter: drop-shadow(0px 0px 2px #ff00ff) drop-shadow(0px 0px 8px #ff00ff);
+	.shadow-text {
+		text-shadow:
+			0px 0px 2px var(--main-color),
+			0px 0px 15px var(--main-color),
+			0px 0px 60px var(--main-color);
+	}
+
+	.applyBorderColor {
+		border-color: var(--main-color);
+	}
+
+	.todoInput:focus {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
+	}
+
+	.fa-trash-can:hover {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
 	}
 </style>

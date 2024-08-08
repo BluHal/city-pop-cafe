@@ -22,7 +22,7 @@
 </script>
 
 <div
-	class="fixed top-0 left-0 overflow-x-hidden overflow-y-scroll bg-[#000000b3] z-40 w-dvw h-dvh p-10"
+	class="fixed top-0 left-0 overflow-x-hidden overflow-y-scroll bg-black bg-opacity-20 z-40 w-dvw h-dvh p-10 backdrop-blur-sm"
 >
 	<div class="grid stationSelectorGrid">
 		{#each videoInfos as videoInfo}

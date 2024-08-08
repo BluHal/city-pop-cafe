@@ -1,14 +1,22 @@
 <script lang="ts">
 	import type { VideoInfo } from '$lib/types';
 	import { onMount } from 'svelte';
+	import Pomodoro from '../components/Pomodoro.svelte';
+	import Settings from '../components/Settings.svelte';
 	import StationSelector from '../components/StationSelector.svelte';
+	import Todo from '../components/Todo.svelte';
 	import YoutubeEmbed from '../components/YoutubeEmbed.svelte';
 	import videoInfoString from '../data/videoUrls.json';
-	import Pomodoro from '../components/Pomodoro.svelte';
-	import Todo from '../components/Todo.svelte';
 
 	const videoInfos: VideoInfo[] = videoInfoString;
 	const availableGifIndexes = [1, 2, 3, 4, 5, 6, 7, 8];
+	const styles = {
+		'main-color': '#FF00FF'
+	};
+
+	$: cssVarStyles = Object.entries(styles)
+		.map(([key, value]) => `--${key}:${value}`)
+		.join(';');
 
 	let staticSound: any;
 	let isPlayerReady = false;
@@ -24,13 +32,18 @@
 	let showStaticEffect = false;
 	let showOriginalVideo = false;
 	let showIndicator = true;
-	let todoModalOpened = false;
+	let modalOpened = false;
 
 	onMount(() => {
 		let interval = setInterval(updateIndicator, 750);
 
 		window.addEventListener('keydown', handleKeyDown);
 		window.addEventListener('click', handleMouseClick);
+
+		const storedMainColor = localStorage.getItem('mainColor');
+		if (storedMainColor) {
+			styles['main-color'] = JSON.parse(storedMainColor);
+		}
 	});
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -40,7 +53,7 @@
 			return;
 		}
 
-		if (todoModalOpened) return;
+		if (modalOpened) return;
 
 		switch (event.key) {
 			case 'g':
@@ -57,7 +70,7 @@
 	}
 
 	function handleMouseClick() {
-		if (!firstStart || todoModalOpened) return;
+		if (!firstStart || modalOpened) return;
 
 		firstStart = false;
 		toggleVideo();
@@ -135,8 +148,13 @@
 		showStaticEffect = false;
 	}
 
-	function onTodoModalToggle(event: any) {
-		todoModalOpened = event.detail;
+	function onModalToggle(event: any) {
+		modalOpened = event.detail;
+	}
+
+	function onColorChanged(event: any) {
+		styles['main-color'] = event.detail;
+		localStorage.setItem('mainColor', JSON.stringify(event.detail));
 	}
 
 	function getRandomElement<T>(array: T[]): T | undefined {
@@ -154,7 +172,7 @@
 	}
 </script>
 
-<div class="w-dvw h-dvh flex flex-col p-10 items-stretch justify-between">
+<div class="w-dvw h-dvh flex flex-col p-10 items-stretch justify-between" style={cssVarStyles}>
 	<div class="w-dvw h-dvh inset-0 {showOriginalVideo ? 'absolute z-20' : 'hidden'}">
 		<YoutubeEmbed bind:player on:videoLoaded={onVideoLoaded} on:playedReady={onPlayerReady} />
 	</div>
@@ -167,14 +185,14 @@
 	{/if}
 
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	{#if !firstStart && !todoModalOpened}
+	{#if !firstStart && !modalOpened}
 		<div
 			class="absolute inset-1/4 cursor-pointer z-30 flex items-middle justify-center centerControllerWrapper"
 			on:click={() => toggleVideo()}
 			role="button"
 			tabindex="0"
 		>
-			<button class="text-neon-pink scale-0">
+			<button class="text-white scale-0">
 				<i class="fa-solid {videoLoaded && videoPlaying ? 'fa-pause' : 'fa-play'} fa-lg shadow-icon"
 				></i>
 			</button>
@@ -194,23 +212,28 @@
 	<div class="vignette w-dvw h-dvh z-30"></div>
 
 	<div class="z-20 text-white flex justify-end gap-5">
-		{#if !firstStart}
-			<Todo on:todoModalToggle={onTodoModalToggle} />
-			<Pomodoro />
+		{#if !firstStart && videoLoaded}
+			<Todo on:todoModalToggle={onModalToggle} {cssVarStyles} />
+			<Pomodoro {cssVarStyles} />
 
-			{#if videoLoaded}
-				<button on:click={() => (showOriginalVideo = !showOriginalVideo)}
-					><i class="fa-brands fa-youtube fa-lg shadow-icon"></i></button
-				>
-			{/if}
+			<button on:click={() => (showOriginalVideo = !showOriginalVideo)}
+				><i class="fa-brands fa-youtube fa-lg shadow-icon"></i></button
+			>
+
+			<Settings
+				{cssVarStyles}
+				hex={styles['main-color']}
+				on:settingsModalToggle={onModalToggle}
+				on:colorChanged={onColorChanged}
+			/>
 		{:else}
 			<span></span>
 		{/if}
 	</div>
 
 	{#if !firstStart}
-		<div class="flex flex-col gap-5 w-full">
-			<div class="z-20 text-white flex gap-5">
+		<div class="flex flex-col gap-5 w-full z-10">
+			<div class="text-white flex gap-5">
 				<button class="cursor-pointer w-4" on:click={() => toggleVideo()}>
 					<i
 						class="fa-solid {videoLoaded && videoPlaying
@@ -226,43 +249,9 @@
 				<button class="cursor-pointer" on:click={() => changeGif()}>
 					<i class="fa-solid fa-image fa-lg shadow-icon"></i>
 				</button>
-
-				<!-- TODO -->
-				<div class="items-center w-full max-w-screen-lg gap-2 pt-2 hidden">
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 0 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 10 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 20 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 30 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 40 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 50 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 60 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 70 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 80 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-					<div
-						class="w-2 h-5 bg-neon-pink shadow-icon {volume <= 90 ? 'opacity-50' : 'opacity-100'}"
-					></div>
-				</div>
 			</div>
 
-			<div class="w-full relative z-20">
+			<div class="w-full relative">
 				<div class="flex align-middle flex-nowrap whitespace-nowrap">
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<span
@@ -295,3 +284,16 @@
 
 	<audio src="/sounds/static-noise.mp3" bind:this={staticSound}></audio>
 </div>
+
+<style>
+	.shadow-icon {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
+	}
+
+	.shadow-text {
+		text-shadow:
+			0px 0px 2px var(--main-color),
+			0px 0px 15px var(--main-color),
+			0px 0px 60px var(--main-color);
+	}
+</style>
