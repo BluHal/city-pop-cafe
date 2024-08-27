@@ -43,11 +43,6 @@ span {
 	opacity: 1;
 }
 
-.stationSelectorGrid {
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-	grid-template-rows: min-content;
-}
-
 .centerControllerWrapper:hover > button {
 	transform: scale(1) !important;
 }

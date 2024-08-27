@@ -28,13 +28,41 @@
 		{#each videoInfos as videoInfo}
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<div
-				class="block w-full p-4 cursor-pointer"
+				class="block w-full p-4 cursor-default"
 				on:click={() => handleStationClick(videoInfo)}
 				role="button"
 				tabindex="0"
 			>
-				<img src="https://img.youtube.com/vi/{videoInfo.id}/maxresdefault.jpg" alt="" />
+				<img
+					class="cursor-pointer"
+					src="https://img.youtube.com/vi/{videoInfo.id}/maxresdefault.jpg"
+					alt=""
+				/>
 			</div>
 		{/each}
 	</div>
+	<div class="absolute text-white top-0 right-0 m-3">
+		<button
+			class="cursor-pointer"
+			on:click={() => {
+				dispatch('stationEsc');
+			}}><i class="fa-solid fa-xmark fa-lg shadow-icon"></i></button
+		>
+	</div>
 </div>
+
+<style>
+	.shadow-icon {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
+	}
+
+	.stationSelectorGrid {
+		grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+		grid-template-rows: min-content;
+	}
+
+	img:hover {
+		filter: drop-shadow(0px 0px 2px var(--main-color)) drop-shadow(0px 0px 8px var(--main-color));
+		scale: 1.01;
+	}
+</style>

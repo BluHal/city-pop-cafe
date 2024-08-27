@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { VideoInfo } from '$lib/types';
 	import { onMount } from 'svelte';
+	import AddToLibrary from '../components/AddToLibrary.svelte';
 	import Pomodoro from '../components/Pomodoro.svelte';
 	import Settings from '../components/Settings.svelte';
 	import StationSelector from '../components/StationSelector.svelte';
@@ -8,7 +9,7 @@
 	import YoutubeEmbed from '../components/YoutubeEmbed.svelte';
 	import videoInfoString from '../data/videoUrls.json';
 
-	const videoInfos: VideoInfo[] = videoInfoString;
+	const storedLinksKey = 'storedLinks';
 	const availableGifIndexes = [1, 2, 3, 4, 5, 6, 7, 8];
 	const styles = {
 		'main-color': '#FF00FF'
@@ -18,12 +19,13 @@
 		.map(([key, value]) => `--${key}:${value}`)
 		.join(';');
 
+	let videoInfos: VideoInfo[] = videoInfoString;
 	let staticSound: any;
 	let isPlayerReady = false;
 	let firstStart = true;
 	let player: any;
 	let videoTitle: string;
-	let selectedVideo: VideoInfo = getRandomElement(videoInfos) || videoInfos[0];
+	let selectedVideo: VideoInfo | null;
 	let videoLoaded = false;
 	let videoPlaying = true;
 	let gifIndex = getRandomElement(availableGifIndexes);
@@ -44,6 +46,10 @@
 		if (storedMainColor) {
 			styles['main-color'] = JSON.parse(storedMainColor);
 		}
+
+		loadVideoInfosFromStorage();
+
+		selectedVideo = getRandomElement(videoInfos) || videoInfos[0];
 	});
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -90,6 +96,10 @@
 		stopStaticSound();
 	}
 
+	function onVideoLoadFailure() {
+		shuffleVideo();
+	}
+
 	const toggleVideo = () => {
 		if (!isPlayerReady) return;
 
@@ -110,6 +120,7 @@
 	};
 
 	const shuffleVideo = () => {
+		if (!selectedVideo) return;
 		let newVideoToPlay: VideoInfo | undefined = selectedVideo;
 
 		while (newVideoToPlay == selectedVideo) {
@@ -127,6 +138,8 @@
 			changeGif();
 		}
 		setTimeout(() => {
+			if (!selectedVideo) return;
+
 			player.loadVideoById(selectedVideo.id, selectedVideo.startAt || 0);
 		}, 100);
 	};
@@ -170,11 +183,31 @@
 
 		return array[nextIndex];
 	}
+
+	function loadVideoInfosFromStorage(): void {
+		const storedVideoLinks = localStorage.getItem(storedLinksKey);
+		if (storedVideoLinks) {
+			videoInfos.push(...JSON.parse(storedVideoLinks));
+		}
+	}
+
+	function onVideoInfoAdded(event: any): void {
+		const response = event.detail;
+
+		if (!event.detail) return;
+
+		videoInfos.push(response);
+	}
 </script>
 
 <div class="w-dvw h-dvh flex flex-col p-10 items-stretch justify-between" style={cssVarStyles}>
 	<div class="w-dvw h-dvh inset-0 {showOriginalVideo ? 'absolute z-20' : 'hidden'}">
-		<YoutubeEmbed bind:player on:videoLoaded={onVideoLoaded} on:playedReady={onPlayerReady} />
+		<YoutubeEmbed
+			bind:player
+			on:videoLoaded={onVideoLoaded}
+			on:onVideoLoadFailure={onVideoLoadFailure}
+			on:playedReady={onPlayerReady}
+		/>
 	</div>
 
 	{#if showStaticEffect}
@@ -213,6 +246,12 @@
 
 	<div class="z-20 text-white flex justify-end gap-5">
 		{#if !firstStart && videoLoaded}
+			<!-- <BackgroundSoundSelector {cssVarStyles} /> -->
+			<AddToLibrary
+				on:addToLibModalToggle={onModalToggle}
+				{cssVarStyles}
+				on:videoInfoAdded={onVideoInfoAdded}
+			/>
 			<Todo on:todoModalToggle={onModalToggle} {cssVarStyles} />
 			<Pomodoro {cssVarStyles} />
 

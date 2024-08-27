@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
@@ -30,7 +30,8 @@
 					playerVars: { autoplay: 1, controls: 1, showinfo: 0, rel: 0, modestbranding: 1 },
 					events: {
 						onStateChange: onPlayerStateChange,
-						onReady: onPlayerReady
+						onReady: onPlayerReady,
+						onError: onPlayerError
 					}
 				});
 			} else {
@@ -44,7 +45,9 @@
 	function onPlayerStateChange(event) {
 		// @ts-ignore
 		if (event.data == YT.PlayerState.PLAYING) {
-			onVideoLoaded();
+			// @ts-ignore
+			var videoData = player.getVideoData();
+			dispatch('videoLoaded', videoData.title);
 		}
 	}
 
@@ -52,10 +55,8 @@
 		dispatch('playedReady', true);
 	}
 
-	function onVideoLoaded() {
-		// @ts-ignore
-		var videoData = player.getVideoData();
-		dispatch('videoLoaded', videoData.title);
+	function onPlayerError() {
+		dispatch('onVideoLoadFailure', 'Failed to load video');
 	}
 </script>
 
